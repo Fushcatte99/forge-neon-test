@@ -190,14 +190,16 @@ app.use((err, req, res, next) => {
   next();
 });
 
-init().then(() => {
+init().catch(e => { console.error('\n  Gagal terhubung ke Neon: ' + e.message); process.exit(1); });
+if (process.env.VERCEL) {
+  /* mode Vercel: aplikasi menjadi fungsi serverless */
+  module.exports = app;
+} else {
+  /* mode lokal / server sendiri */
   app.listen(PORT, () => {
     console.log('');
     console.log('  FORGE + Neon siap  →  port ' + PORT);
     console.log('  Database permanen  →  ' + new URL(process.env.DATABASE_URL).hostname);
     console.log('  Semua data tersimpan di Neon PostgreSQL.\n');
   });
-}).catch(e => {
-  console.error('\n  Gagal terhubung ke Neon: ' + e.message);
-  process.exit(1);
-});
+}
