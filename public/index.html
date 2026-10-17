@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FORGE — Pasar Tools AI · Database Permanen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0d0b;--bg2:#0f1310;--surface:#141a15;--surface2:#1a211c;--line:#232c25;--line2:#303b32;
+--text:#e9efe4;--muted:#93a094;--dim:#5c6a5e;--acc:#c8f04f;--acc-ink:#131602;--orange:#ff7847;--aqua:#5ee0c2;
+--mono:'JetBrains Mono',monospace;--sans:'Space Grotesk',sans-serif}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.mono{font-family:var(--mono)}.dim{color:var(--dim)}
+.container{max-width:1280px;margin:0 auto;padding:0 24px}
+canvas{display:block}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:#8fb32e}
+svg{width:17px;height:17px;stroke-width:1.8}
+::selection{background:var(--acc);color:var(--acc-ink)}
+::-webkit-scrollbar{width:10px;height:8px}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--line2);border-radius:9px;font-weight:600;font-size:14px;background:var(--surface);transition:.15s}
+.btn:hover{background:var(--surface2);border-color:var(--dim);transform:translateY(-1px)}
+.btn.sm{padding:7px 12px;font-size:13px}
+.btn-acc{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;background:var(--acc);color:var(--acc-ink);border-radius:9px;font-weight:700;font-size:14px;border:1px solid var(--acc);transition:.15s}
+.btn-acc:hover{background:#d9fa72;transform:translateY(-1px)}
+.btn-acc svg,.btn svg{width:16px;height:16px}
+  #topbar{position:sticky;top:0;z-index:60;background:rgba(10,13,11,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tb-in{display:flex;align-items:center;gap:20px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.brand svg{width:29px;height:29px}
+.b-txt b{font-size:19px;letter-spacing:.16em;display:block;line-height:1.05}
+.b-txt small{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.32em;color:var(--muted)}
+nav.main{display:flex;gap:2px}
+nav.main a{padding:8px 13px;font-size:14.5px;color:var(--muted);border-radius:8px;cursor:pointer;display:flex;gap:7px;align-items:center}
+nav.main a:hover{color:var(--text);background:var(--surface)}
+nav.main a.on{color:var(--text)}
+.nav-n{font-size:10.5px;background:var(--acc);color:var(--acc-ink);border-radius:5px;padding:1px 6px;font-weight:700}
+.tb-search{flex:1;max-width:330px;display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 12px;margin-left:auto}
+.tb-search svg{width:15px;height:15px;color:var(--dim);flex:none}
+.tb-search input{background:none;border:none;padding:0;flex:1;min-width:0}
+.tb-search kbd{font-family:var(--mono);font-size:10px;color:var(--dim);border:1px solid var(--line2);border-radius:4px;padding:1px 6px}
+.tb-act{display:flex;align-items:center;gap:8px}
+.ibtn{position:relative;width:38px;height:38px;border:1px solid var(--line2);border-radius:9px;display:grid;place-items:center;color:var(--muted);transition:.15s}
+.ibtn:hover{color:var(--text);background:var(--surface2)}
+.ibtn .n{position:absolute;top:-6px;right:-6px;font-family:var(--mono);font-size:9.5px;background:var(--acc);color:var(--acc-ink);border-radius:5px;padding:1px 5px;font-weight:700}
+.neonbar{position:relative;border-bottom:1px solid var(--line);overflow:hidden}
+#glyphs{position:absolute;inset:0;width:100%;height:100%}
+.nb-in{position:relative;display:flex;align-items:center;gap:22px;padding:16px 24px;flex-wrap:wrap}
+.nb-left{display:flex;gap:12px;align-items:center}
+.nb-dot{width:10px;height:10px;border-radius:50%;background:var(--acc);animation:pulse 1.6s infinite;flex:none}
+@keyframes pulse{50%{opacity:.25;box-shadow:0 0 0 6px rgba(200,240,79,.15)}}
+.nb-left b{font-size:13px;letter-spacing:.06em;display:block}
+.nb-host{font-size:10.5px;color:var(--aqua)}
+.nb-stats{margin-left:auto;font-size:11px;color:var(--muted)}
+.view{display:none}.view.on{display:block}
+.cats-row{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 6px}
+.cchip{font-family:var(--mono);font-size:11px;padding:6px 12px;border:1px solid var(--line2);border-radius:20px;color:var(--muted)}
+.cchip:hover{color:var(--text);border-color:var(--dim)}
+.cchip.on{color:var(--acc-ink);background:var(--acc);border-color:var(--acc);font-weight:700}
+.sec-head{display:flex;align-items:center;gap:14px;margin:22px 0 16px;flex-wrap:wrap}
+.sec-head h2{font-size:22px;font-weight:700}
+.aux{margin-left:auto;display:flex;align-items:center;gap:12px}
+.aux select{width:auto;padding:7px 10px;font-size:13px}
+.res{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.app-card{grid-column:span 4;border:1px solid var(--line);border-radius:12px;background:var(--bg2);overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s;display:flex;flex-direction:column}
+.app-card:hover{transform:translateY(-3px);border-color:#8fb32e}
+.app-card.wide{grid-column:span 8;flex-direction:row}
+.app-card.wide .cover{width:57%;aspect-ratio:auto;height:100%}
+.cover{position:relative;background:#050705;aspect-ratio:520/242;flex:none}
+.cover canvas{width:100%;height:100%;object-fit:cover}
+.badges{position:absolute;top:10px;left:10px;display:flex;gap:6px}
+.badge{font-family:var(--mono);font-size:10px;padding:3px 7px;border-radius:5px;font-weight:700}
+.badge.sale{background:var(--orange);color:#1f0c04}
+.badge.free2{background:var(--acc);color:var(--acc-ink)}
+.badge.new{background:var(--aqua);color:#03110d}
+.quick{position:absolute;top:9px;right:9px;width:31px;height:31px;border-radius:8px;background:rgba(10,13,11,.85);border:1px solid var(--line2);color:var(--muted);display:grid;place-items:center;opacity:0;transition:.18s}
+.app-card:hover .quick{opacity:1}
+.quick.on{color:var(--orange);opacity:1}.quick.on svg{fill:var(--orange)}
+.quick svg{width:15px;height:15px}
+.cinfo{padding:13px 15px 15px;display:flex;flex-direction:column;gap:7px;flex:1}
+.c-top{display:flex;align-items:center;justify-content:space-between}
+.cat-chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--acc)}
+.plats{display:flex;gap:6px;color:var(--dim)}.plats svg{width:13px;height:13px}
+.cinfo h3{font-size:16.5px}
+.tl{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-rate{font-size:12.5px;color:var(--muted)}
+.c-bot{display:flex;align-items:center;margin-top:auto}
+.dl{font-size:11.5px;color:var(--dim);display:flex;gap:5px;align-items:center}.dl svg{width:12px;height:12px}
+.price{margin-left:auto;font-weight:700;font-size:14.5px}
+.price.free{color:var(--acc)}
+.price .p-old{color:var(--dim);font-weight:400;font-size:11.5px;text-decoration:line-through;margin-right:7px}
+.stars{display:inline-flex;gap:2px}.stars svg{width:12px;height:12px;color:var(--dim)}
+.stars svg.on{color:var(--acc);fill:var(--acc)}
+.rv{font-family:var(--mono);font-size:12px;font-weight:700}
+.rc{color:var(--dim);font-size:11px}
+.norat{color:var(--dim);font-size:11px}
+  .g-empty{grid-column:1/-1;text-align:center;padding:70px 20px;border:1px dashed var(--line2);border-radius:12px;color:var(--muted)}
+.g-empty svg{width:34px;height:34px;color:var(--dim);margin-bottom:12px}
+.g-empty h4{color:var(--text)}.g-empty p{font-size:13px;margin:6px 0 18px}
+.lib-head{display:flex;align-items:center;gap:20px;padding:30px 0 18px;flex-wrap:wrap}
+.lib-head h1{font-size:27px}
+.ltab{padding:9px 16px;border:1px solid var(--line2);border-radius:9px;font-size:13.5px;color:var(--muted);display:flex;gap:9px;align-items:center}
+.ltab.on{color:var(--text);background:var(--surface);border-color:var(--dim)}
+.lib-row{display:grid;grid-template-columns:190px 1fr auto;gap:20px;align-items:center;border:1px solid var(--line);border-radius:12px;background:var(--bg2);padding:14px;margin-bottom:14px}
+.lr-cover{position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden}
+.lr-cover canvas{width:100%;height:100%;object-fit:cover}
+.lr-info h3{font-size:17px}.lr-info .v{color:var(--dim);font-size:11px;margin-left:8px}
+.lr-meta{font-size:11px;color:var(--dim);margin:4px 0 6px}
+.lr-act{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 14px}
+a.btn-acc{text-decoration:none}
+#drawer-wrap{position:fixed;inset:0;z-index:90;pointer-events:none}
+#drawer-wrap.open{pointer-events:auto}
+.drawer-bg{position:absolute;inset:0;background:rgba(5,7,6,.65);opacity:0;transition:.25s}
+#drawer-wrap.open .drawer-bg{opacity:1}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:min(430px,100vw);background:var(--bg2);border-left:1px solid var(--line2);transform:translateX(103%);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+#drawer-wrap.open .drawer{transform:none}
+.dr-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+.dr-head h3{font-size:17px;display:flex;gap:10px;align-items:center}
+.dr-head h3 svg{color:var(--acc)}
+.dr-body{flex:1;overflow-y:auto;padding:14px 20px}
+.ci{display:grid;grid-template-columns:74px 1fr auto;gap:13px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.ci canvas{width:74px;height:44px;object-fit:cover;border-radius:6px}
+.ci-i b{display:block;font-size:14px}
+.ci-i .mono{font-size:10px;color:var(--dim)}
+.ci-i b.p{font-size:13.5px}
+.ci-x{color:var(--dim);padding:6px}
+.dr-foot{border-top:1px solid var(--line);padding:16px 20px;display:flex;flex-direction:column;gap:11px}
+.cf-t{display:flex;justify-content:space-between;font-size:14px}.cf-t b{font-size:17px}
+.dr-foot .btn-acc{justify-content:center}
+.fine{font-size:10px;color:var(--dim);text-align:center}
+  .modal-bg{position:fixed;inset:0;z-index:110;background:rgba(5,7,6,.75);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadein .2s}
+@keyframes fadein{from{opacity:0}}
+.modal{background:var(--bg2);border:1px solid var(--line2);border-radius:14px;max-width:min(560px,94vw);max-height:92vh;overflow-y:auto;width:100%;animation:mup .25s cubic-bezier(.2,.8,.2,1)}
+@keyframes mup{from{transform:translateY(16px);opacity:0}}
+.mo-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg2);z-index:2}
+.mo-x{color:var(--dim);padding:4px}.mo-x:hover{color:var(--text)}
+.mo-body{padding:20px 22px}
+.d-cover{border-radius:10px;overflow:hidden;border:1px solid var(--line);margin-bottom:16px}
+.d-cover canvas{width:100%;height:auto}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chip{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:6px;border:1px solid var(--line2);color:var(--muted)}
+.chip.cat{color:var(--acc);border-color:rgba(200,240,79,.35)}
+.chip.oss{color:var(--aqua);border-color:rgba(94,224,194,.3)}
+.chip.indie{color:var(--orange);border-color:rgba(255,120,71,.35)}
+.d-title{font-size:24px;margin-bottom:4px}
+.d-tag{color:var(--muted);font-size:14px}
+.d-meta{display:flex;gap:10px;align-items:center;margin:12px 0 16px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.d-desc{color:#c3ccbe;font-size:14.5px;margin-bottom:16px}
+.tagrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tagc{font-size:11px;padding:4px 10px;border:1px solid var(--line2);border-radius:20px;color:var(--muted)}
+.buybox{border:1px solid var(--line2);border-radius:11px;padding:16px;display:flex;flex-direction:column;gap:11px;margin-bottom:18px;background:var(--surface)}
+.bb-price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bb-price .big{font-size:23px;font-weight:700}
+.bb-price .big.now{color:var(--acc)}
+.bb-price s{color:var(--dim);font-size:13px}
+.buybox .btn-acc{justify-content:center}
+.wishbtn{display:flex;gap:9px;align-items:center;justify-content:center;padding:10px;border:1px solid var(--line2);border-radius:9px;font-size:13px;color:var(--muted)}
+.wishbtn:hover{color:var(--text)}.wishbtn.on{color:var(--orange)}.wishbtn.on svg{fill:var(--orange)}
+.ds-rows{border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:18px}
+.ds-row{display:flex;justify-content:space-between;gap:12px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.ds-row:last-child{border-bottom:none}.ds-row span{color:var(--dim)}.ds-row b{font-weight:600;text-align:right}
+.rv-form{border:1px solid var(--line2);border-radius:11px;padding:15px;background:var(--surface);display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.rv-form h4{font-size:14px}
+.rf-stars{display:flex;gap:4px}
+.rf-stars button{padding:4px}
+.rf-stars svg{width:19px;height:19px;color:var(--dim)}
+.rf-stars button.on svg{color:var(--acc);fill:var(--acc)}
+.rf-err{color:#ff5f56;font-size:11.5px}
+.rv{display:flex;gap:13px;padding:14px 0;border-bottom:1px solid var(--line)}
+.rv:last-child{border-bottom:none}
+.rv-av{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-family:var(--mono);flex:none}
+.rv-h{display:flex;gap:10px;align-items:baseline}.rv-h b{font-size:14px}.rv-h span{font-size:10.5px;color:var(--dim);font-family:var(--mono)}
+.rv-b p{font-size:13.5px;color:#c3ccbe;margin:4px 0}
+  .up-grid{display:grid;grid-template-columns:1fr 240px;gap:22px;padding:20px 22px}
+.up-grid h4{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--dim);margin:18px 0 10px}
+.up-grid h4:first-child{margin-top:0}
+.drop{border:1.5px dashed var(--line2);border-radius:12px;padding:24px 16px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:#8fb32e;background:var(--surface);color:var(--text)}
+.drop svg{width:28px;height:28px;color:var(--acc);margin-bottom:8px}
+.drop b{display:block;font-size:14px}.drop span{font-size:11.5px;color:var(--dim)}
+.filecard{display:flex;gap:12px;align-items:center;border:1px solid var(--line2);border-radius:10px;padding:10px 14px;margin-top:10px;font-size:12.5px}
+.filecard svg{width:18px;height:18px;color:var(--acc);flex:none}
+.filecard .mono{color:var(--dim);font-size:10.5px}
+.fld{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}
+.fld label{font-size:12.5px;color:var(--muted)}
+textarea{resize:vertical;min-height:80px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.checks{display:flex;gap:16px}
+.checks label{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer}
+input[type=checkbox],input[type=radio]{accent-color:var(--acc);width:15px;height:15px;padding:0;flex:none}
+.up-r{border-left:1px solid var(--line);padding-left:22px}
+#upcv{width:100%;border-radius:10px;border:1px solid var(--line2)}
+.hint{font-size:10px;color:var(--dim);margin:9px 0;line-height:1.6}
+.vari{width:100%;padding:8px;border:1px solid var(--line2);border-radius:8px;font-size:12px;color:var(--muted);display:flex;gap:8px;justify-content:center;align-items:center;margin-top:8px}
+.vari:hover{color:var(--text)}
+.uc{display:flex;gap:9px;align-items:center;font-size:12px;color:var(--dim)}
+.uc.ok{color:var(--muted)}.uc.ok svg{color:var(--acc)}
+.uc svg{width:13px;height:13px;flex:none}
+.up-err{color:#ff5f56;font-size:12px;margin-top:10px}
+.co-item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.co-item canvas{width:64px;height:38px;object-fit:cover;border-radius:6px}
+.co-item b{font-size:14px;display:block}
+.co-item .mono{font-size:10px;color:var(--dim)}
+.co-total{display:flex;justify-content:space-between;padding:14px 0 4px;font-size:15px}
+.co-total b{font-size:18px}
+.pay-m{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.pay-m label{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:13.5px;color:var(--muted)}
+.pay-m label:has(input:checked){border-color:#8fb32e;color:var(--text);background:var(--surface)}
+.pay-m .mono{margin-left:auto;font-size:10px;color:var(--dim)}
+.modal .btn-acc{width:100%;justify-content:center;margin-top:6px}
+.spinner{width:38px;height:38px;border:3px solid var(--line2);border-top-color:var(--acc);border-radius:50%;margin:26px auto;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pay-log{text-align:center;font-size:12px;color:var(--muted);min-height:90px;padding:0 20px 24px}
+.pay-log div{padding:3px 0}
+  .okmark{width:74px;height:74px;display:block;margin:24px auto 14px}
+.okmark circle{stroke:var(--acc);stroke-width:2.5;fill:none;stroke-dasharray:151;stroke-dashoffset:151;animation:dash .7s ease forwards}
+.okmark path{stroke:var(--acc);stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:36;stroke-dashoffset:36;animation:dash .45s .5s ease forwards}
+@keyframes dash{to{stroke-dashoffset:0}}
+.succ{text-align:center;padding:10px 22px 26px}
+.succ h3{font-size:20px;margin-bottom:4px}
+.succ .oid{font-size:11.5px;color:var(--dim)}
+.succ-list{text-align:left;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:16px 0;font-size:13px}
+.succ-btns{display:flex;gap:10px}.succ-btns .btn-acc{flex:1}
+#toasts{position:fixed;right:18px;bottom:18px;z-index:300;display:flex;flex-direction:column;gap:10px}
+.toast{display:flex;gap:11px;align-items:center;background:var(--surface2);border:1px solid var(--line2);border-left:3px solid var(--acc);padding:12px 16px;border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.5);font-size:13.5px;max-width:340px;animation:tin .28s}
+.toast svg{width:16px;height:16px;color:var(--acc);flex:none}
+@keyframes tin{from{opacity:0;transform:translateX(30px)}}
+footer{border-top:1px solid var(--line);margin-top:60px;background:var(--bg2);padding:20px 24px;font-size:10.5px;color:var(--dim);font-family:var(--mono)}
+@media(max-width:1080px){.app-card,.app-card.wide{grid-column:span 6}.app-card.wide{flex-direction:column}.app-card.wide .cover{width:100%;aspect-ratio:520/242}.nb-stats{margin-left:0;width:100%}.up-grid{grid-template-columns:1fr}.up-r{border-left:none;padding-left:0;border-top:1px solid var(--line);padding-top:18px}}
+@media(max-width:720px){.app-card,.app-card.wide{grid-column:span 12}.tb-search kbd{display:none}.brand small{display:none}.lib-row{grid-template-columns:1fr}.lr-act{padding:0}.frow{grid-template-columns:1fr}.tb-search{max-width:180px}}
+</style>
+</head>
+<body>
+
+<header id="topbar">
+  <div class="container tb-in">
+    <a class="brand" data-act="view" data-view="store">
+      <svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="7" fill="none" stroke="#c8f04f" stroke-width="2"/><path d="M10 8v6l6 4-6 4v2.5" stroke="#e9efe4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M22.5 8v16" stroke="#c8f04f" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="b-txt"><b>FORGE</b><small>AI TOOL MARKET</small></span>
+    </a>
+    <nav class="main">
+      <a class="on" data-act="view" data-view="store">Jelajahi</a>
+      <a data-act="view" data-view="library">Pustakaku <span class="nav-n mono" id="navLibN" hidden>0</span></a>
+    </nav>
+    <div class="tb-search"><i data-lucide="search"></i><input id="q" placeholder="Cari tools…" autocomplete="off"><kbd>/</kbd></div>
+    <div class="tb-act">
+      <button class="ibtn" data-act="wish-view" title="Wishlist"><i data-lucide="heart"></i><span class="n" id="wishN" hidden>0</span></button>
+      <button class="ibtn" data-act="cart-open" title="Keranjang"><i data-lucide="shopping-cart"></i><span class="n" id="cartN" hidden>0</span></button>
+      <button class="btn-acc" data-act="up-open"><i data-lucide="upload"></i><span>Unggah Tool</span></button>
+    </div>
+  </div>
+</header>
+
+<section class="neonbar">
+  <canvas id="glyphs" aria-hidden="true"></canvas>
+  <div class="container nb-in" style="padding-left:0;padding-right:0">
+    <div class="nb-left">
+      <span class="nb-dot"></span>
+      <div><b>DATABASE PERMANEN — TERHUBUNG</b><span class="mono nb-host" id="nbHost">memeriksa…</span></div>
+    </div>
+    <div class="nb-stats mono" id="nbStats"></div>
+    <button class="btn sm" data-act="persist-test"><i data-lucide="zap"></i>Uji persistensi</button>
+  </div>
+</section>
+<main id="view-store" class="view container on">
+  <div class="cats-row" id="catsRow"></div>
+  <div class="sec-head">
+    <h2>Jelajahi Tools</h2>
+    <div class="aux"><span class="res" id="resCount"></span>
+      <select id="sortSel">
+        <option value="pop">Paling populer</option><option value="rate">Rating tertinggi</option>
+        <option value="new">Terbaru</option><option value="asc">Harga terendah</option>
+        <option value="desc">Harga tertinggi</option><option value="az">Nama A–Z</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<main id="view-library" class="view container">
+  <div class="lib-head"><h1>Pustakaku</h1><div id="libTabs"></div></div>
+  <div id="libList"></div>
+</main>
+
+<footer>FORGE · Node.js + Express + PostgreSQL (Neon) — data tersimpan permanen di cloud database-mu.</footer>
+
+<div id="drawer-wrap">
+  <div class="drawer-bg" data-act="cart-close"></div>
+  <aside class="drawer">
+    <div class="dr-head"><h3><i data-lucide="shopping-cart"></i>Keranjang</h3><button data-act="cart-close"><i data-lucide="x"></i></button></div>
+    <div class="dr-body" id="cartBody"></div>
+    <div class="dr-foot" id="cartFoot"></div>
+  </aside>
+</div>
+<div id="modal-root"></div>
+<div id="toasts"></div>
+
+<script>
+/* ============ KATEGORI & SENI GENERATIF ============ */
+const CATS={imggen:{label:'Penghasil Gambar',code:'IMG'},nlp:{label:'NLP & Chatbot',code:'NLP'},audio:{label:'Audio & Suara',code:'AUD'},video:{label:'Video & Motion',code:'VID'},vision:{label:'Computer Vision',code:'VIS'},coding:{label:'Asisten Kode',code:'DEV'},agent:{label:'Otomasi & Agen',code:'AGT'},data:{label:'Data & Dataset',code:'DAT'},llm:{label:'LLM Lokal',code:'LLM'}};
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icons=()=>window.lucide&&lucide.createIcons();
+function hashSeed(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const PALS=[{a:'#c8f04f',b:'#e9efe4'},{a:'#ff7847',b:'#f5d547'},{a:'#5ee0c2',b:'#e9efe4'},{a:'#f5d547',b:'#c8f04f'},{a:'#e9efe4',b:'#5ee0c2'},{a:'#ff7847',b:'#e9efe4'}];
+  const PAT={
+ imggen(c,R,w,h,C){const n=Math.max(4,Math.round(h/34)),cw=w/n,ch=h/n;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){const r=R();
+   if(r<.1){c.fillStyle=C.a;c.globalAlpha=.95;c.fillRect(x*cw+1,y*ch+1,cw-2,ch-2)}
+   else if(r<.24){c.fillStyle=C.b;c.globalAlpha=.15;c.fillRect(x*cw+1,y*ch+1,cw-2,ch-2)}
+   else if(r<.29){c.strokeStyle=C.a;c.globalAlpha=.7;c.beginPath();c.arc(x*cw+cw/2,y*ch+ch/2,Math.min(cw,ch)/2.6,0,7);c.stroke()}
+   c.globalAlpha=1}},
+ llm(c,R,w,h,C){const s=Math.max(13,Math.round(h/9));
+  for(let y=0;y<Math.ceil(h/s);y++)for(let x=0;x<Math.ceil(w/s);x++){const r=R();
+   c.fillStyle=r<.1?C.a:C.b;c.globalAlpha=r<.1?.8:r<.3?.28:.08;c.fillRect(x*s+1,y*s+1,s-3,s-3)}c.globalAlpha=1},
+ nlp(c,R,w,h,C){for(let y=10;y<h-8;y+=17){let x=10+R()*22;
+  while(x<w-20){const len=8+R()*46;c.fillStyle=R()<.2?C.a:C.b;c.globalAlpha=R()<.2?.8:.3;
+   c.fillRect(x,y,len,Math.max(3,h*.028));x+=len+7}c.globalAlpha=1}},
+ audio(c,R,w,h,C){const n=Math.max(24,Math.floor(w/11)),bw=w/n;
+  for(let i=0;i<n;i++){const amp=(.22+R()*.78)*(h*.42),hl=R()<.15;
+   c.fillStyle=hl?C.a:C.b;c.globalAlpha=hl?.9:.34;c.fillRect(i*bw+1,h/2-amp/2,Math.max(1,bw-2),amp)}c.globalAlpha=1},
+ vision(c,R,w,h,C){const cx=w*.5,cy=h*.5,mr=Math.min(w,h)*.42;
+  for(let i=1;i<=4;i++){c.strokeStyle=C.b;c.globalAlpha=.22;c.beginPath();c.arc(cx,cy,mr*i/4,0,7);c.stroke()}
+  c.globalAlpha=1;c.strokeStyle=C.a;c.lineWidth=2;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+mr*.7,cy-mr*.5);c.stroke();
+  const b=Math.min(w,h)*.18;c.strokeStyle=C.b;
+  [[8,8,1,1],[w-8,8,-1,1],[8,h-8,1,-1],[w-8,h-8,-1,-1]].forEach(([x,y,sx,sy])=>{c.beginPath();c.moveTo(x+sx*b,y);c.lineTo(x,y);c.lineTo(x,y+sy*b);c.stroke()});
+  c.fillStyle=C.a;for(let i=0;i<3;i++){const a=R()*7,d=R()*mr*.85;c.beginPath();c.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d,2.5,0,7);c.fill()}c.lineWidth=1},
+ video(c,R,w,h,C){const fh=h*.6,fy=(h-fh)/2,fw=fh*.78;
+  c.fillStyle='rgba(233,239,228,.05)';c.fillRect(0,fy,w,fh);
+  for(let x=6;x<w;x+=fw+10){c.strokeStyle=C.b;c.globalAlpha=.5;c.strokeRect(x,fy,fw,fh);
+   if(R()<.5){c.fillStyle=C.a;c.globalAlpha=.85;c.beginPath();c.moveTo(x+fw/2-6,fy+fh/2-7);c.lineTo(x+fw/2-6,fy+fh/2+7);c.lineTo(x+fw/2+7,fy+fh/2);c.closePath();c.fill()}
+   c.fillStyle=C.a;c.globalAlpha=.5;for(let hx=x+7;hx<x+fw-4;hx+=15){c.fillRect(hx,fy-9,6,5);c.fillRect(hx,fy+fh+4,6,5)}c.globalAlpha=1}
+  c.fillStyle=C.a;c.fillRect(0,h-12,w*.4,4)},
+ coding(c,R,w,h,C){const lines=Math.floor(h/22);
+  for(let i=0;i<lines;i++){const y=13+i*22,ind=(R()*4|0)*16+12,segs=1+(R()*3|0);let x=ind;
+   for(let s=0;s<segs;s++){const len=18+R()*80;c.fillStyle=(s===0&&R()<.5)?C.a:C.b;c.globalAlpha=s===0?.85:.36;c.fillRect(x,y,len,6);x+=len+13}c.globalAlpha=1}
+  c.fillStyle=C.a;c.fillRect(0,h*.45,w,2);
+  c.font=`700 ${h*.3}px "JetBrains Mono"`;c.fillStyle=C.a;c.globalAlpha=.75;c.textAlign='right';c.fillText('</>',w-10,h*.58);c.textAlign='left';c.globalAlpha=1},
+ agent(c,R,w,h,C){const nodes=[];for(let i=0,n=5+(R()*3|0);i<n;i++)nodes.push({x:22+R()*(w-44),y:18+R()*(h-36),r:4+R()*5});
+  nodes.forEach((a,i)=>{const b=nodes[(i+1)%nodes.length];c.strokeStyle='rgba(233,239,228,.22)';c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke()});
+  nodes.forEach(nd=>{c.fillStyle=R()<.45?C.a:C.b;c.globalAlpha=.9;c.beginPath();c.arc(nd.x,nd.y,nd.r,0,7);c.fill();
+   c.strokeStyle=C.b;c.globalAlpha=.55;c.beginPath();c.arc(nd.x,nd.y,nd.r+5,0,7);c.stroke();c.globalAlpha=1})},
+ data(c,R,w,h,C){const cw=Math.max(30,w/12|0),ch=Math.max(18,h/7|0);
+  for(let y=0;y<Math.ceil(h/ch);y++)for(let x=0;x<Math.ceil(w/cw);x++){const r=R();
+   c.strokeStyle='rgba(233,239,228,.09)';c.strokeRect(x*cw,y*ch,cw,ch);
+   if(r<.18){c.fillStyle=C.a;c.globalAlpha=.8;c.fillRect(x*cw+4,y*ch+5,cw-8,ch-10)}
+   else if(r<.34){c.fillStyle=C.b;c.globalAlpha=.22;c.fillRect(x*cw+4,y*ch+5,cw-8,ch-10)}c.globalAlpha=1}
+  c.fillStyle='rgba(233,239,228,.06)';c.fillRect(0,0,w,ch);c.fillStyle=C.a;c.fillRect(0,ch-2,w,2)}
+};
+  function drawArt(cv,tool,t){
+  if(!cv)return;
+  const c=cv.getContext('2d'),w=cv.width,h=cv.height;
+  const seed=hashSeed(String(tool.name)),R=mulberry32(seed),C=PALS[seed%PALS.length];
+  c.fillStyle=`hsl(${100+seed%150} 12% ${4+seed%3}%)`;c.fillRect(0,0,w,h);
+  c.textAlign='left';c.textBaseline='alphabetic';
+  if(h>=90){c.font=`700 ${h*.88}px "Space Grotesk"`;c.fillStyle='rgba(233,239,228,.055)';c.textAlign='right';c.fillText((tool.name||'#')[0].toUpperCase(),w-6,h-6);c.textAlign='left'}
+  (PAT[tool.cat]||PAT.llm)(c,R,w,h,C);
+  if(t){c.fillStyle=C.a;c.globalAlpha=.85;c.fillRect((t*90)%w,0,2,h);c.globalAlpha=1}
+  c.fillStyle='rgba(0,0,0,.15)';for(let y=0;y<h;y+=4)c.fillRect(0,y,w,1);
+  if(h>=80){c.strokeStyle='rgba(233,239,228,.07)';c.strokeRect(.5,.5,w-1,h-1);
+    c.font=`600 ${Math.max(9,h*.042)}px "JetBrains Mono"`;c.fillStyle='rgba(233,239,228,.42)';
+    c.fillText(`${(CATS[tool.cat]||{code:'AI'}).code}-${String(seed%97).padStart(2,'0')} · v${tool.ver||'1.0.0'}`,8,h-9)}
+}
+/* ============ STATE & API ============ */
+let TOOLS=[],WISH=new Set(),LIB=[],CART=[];
+let F={q:'',cat:'all',sort:'pop'},view='store',libTab='owned',STATS=null;
+try{CART=JSON.parse(localStorage.getItem('forge_cart')||'[]')}catch(e){}
+const saveCart=()=>localStorage.setItem('forge_cart',JSON.stringify(CART));
+const fmtRp=n=>n?'Rp '+n.toLocaleString('id-ID'):'Gratis';
+const fmtDl=n=>n>=1e6?(n/1e6).toFixed(1).replace('.',',')+' jt':n>=1e3?(n/1e3).toFixed(0)+' rb':String(n);
+const fmtDate=iso=>new Date(iso).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+const byId=id=>TOOLS.find(t=>t.id===+id)||LIB.find(t=>t.id===+id);
+async function jget(u){const r=await fetch(u);const j=await r.json();if(!r.ok)throw j.error;return j}
+async function jpost(u,b){const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});const j=await r.json();if(!r.ok)throw j.error;return j}
+async function loadAll(){
+  [TOOLS,WISH,LIB,STATS]=[await jget('/api/tools'),await jget('/api/wishlist'),await jget('/api/library'),await jget('/api/stats')];
+  WISH=new Set(WISH);renderAll();
+}
+  /* ============ TOAST & MODAL ============ */
+function toast(msg,icon='check'){
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<i data-lucide="${icon}"></i><span>${msg}</span>`;
+  $('#toasts').append(t);icons();
+  setTimeout(()=>{t.style.opacity=0;t.style.transition='.3s';setTimeout(()=>t.remove(),320)},3400);
+}
+function modal(html){const root=$('#modal-root');
+  root.innerHTML=`<div class="modal-bg"><div class="modal">${html}</div></div>`;
+  root.firstElementChild.addEventListener('pointerdown',e=>{if(e.target===root.firstElementChild)closeModal()});
+  document.body.classList.add('lock');icons();return root.querySelector('.modal')}
+function closeModal(){$('#modal-root').innerHTML='';if(!$('#drawer-wrap').classList.contains('open'))document.body.classList.remove('lock')}
+/* ============ RENDER ============ */
+function starsHTML(t){
+  if(!t.ratingCount&&!t.rating)return '<span class="norat mono">belum diulas</span>';
+  const f=Math.round(t.rating);
+  return `<span class="stars">${[0,1,2,3,4].map(i=>`<i data-lucide="star" class="${i<f?'on':''}"></i>`).join('')}</span> <b class="rv mono">${t.rating.toFixed(1).replace('.',',')}</b><span class="rc mono">(${t.ratingCount})</span>`;
+}
+function priceHTML(t){
+  if(t.price===0)return '<span class="price free">Gratis</span>';
+  if(t.disc)return `<span class="price"><span class="p-old">${fmtRp(t.price)}</span>${fmtRp(Math.round(t.price*(100-t.disc)/100/500)*500)}</span>`;
+  return `<span class="price">${fmtRp(t.price)}</span>`;
+}
+function platIcons(t){return t.plat.map(p=>`<i data-lucide="${p==='windows'?'monitor':'smartphone'}" title="${p}"></i>`).join('')}
+function licChip(t){const o=['MIT','Apache-2.0','GPL-3.0','MPL-2.0','CC-BY-4.0'].includes(t.lic);return `<span class="chip ${o?'oss':'indie'}">${o?'Open Source':'Indie'} · ${t.lic}</span>`}
+function cardHTML(t,wide){
+  return `<article class="app-card${wide?' wide':''}" data-id="${t.id}" data-act="open" tabindex="0">
+   <div class="cover"><canvas data-id="${t.id}" width="${wide?760:520}" height="${wide?300:242}"></canvas>
+    <div class="badges">${t.disc?`<span class="badge sale">−${t.disc}%</span>`:''}${t.price===0?'<span class="badge free2">GRATIS</span>':''}${t.hasFile?'<span class="badge new">BERKAS NYATA</span>':''}</div>
+    <button class="quick ${WISH.has(t.id)?'on':''}" data-act="wish" data-id="${t.id}" title="Wishlist"><i data-lucide="heart"></i></button></div>
+   <div class="cinfo">
+    <div class="c-top"><span class="cat-chip">${(CATS[t.cat]||{}).label||''}</span><span class="plats">${platIcons(t)}</span></div>
+    <h3>${esc(t.name)}</h3><p class="tl">${esc(t.tagline)}</p>
+    <div class="c-rate">${starsHTML(t)}</div>
+    <div class="c-bot"><span class="dl mono"><i data-lucide="download"></i>${fmtDl(t.downloads)}</span>${priceHTML(t)}</div>
+   </div></article>`;
+}
+  function renderGrid(){
+  let list=TOOLS.filter(t=>{
+    if(F.cat!=='all'&&t.cat!==F.cat)return false;
+    if(F.q&&!(t.name+' '+t.tagline+' '+t.dev+' '+t.tags.join(' ')).toLowerCase().includes(F.q.toLowerCase()))return false;
+    return true});
+  list.sort((a,b)=>F.sort==='pop'?b.downloads-a.downloads:F.sort==='rate'?b.rating-a.rating:F.sort==='new'?new Date(b.createdAt)-new Date(a.createdAt):F.sort==='asc'?(a.price||0)-(b.price||0):F.sort==='desc'?(b.price||0)-(a.price||0):a.name.localeCompare(b.name));
+  $('#grid').innerHTML=list.length?list.map((t,i)=>cardHTML(t,i%7===3&&list.length>4)).join(''):
+   `<div class="g-empty"><i data-lucide="package-search"></i><h4>Tidak ada tool yang cocok</h4><p>Reset pencarianmu atau unggah tool baru.</p></div>`;
+  $$('#grid canvas[data-id]').forEach(cv=>drawArt(cv,byId(cv.dataset.id)));
+  $('#resCount').textContent=list.length+' dari '+TOOLS.length+' tools';
+  renderCats();icons();
+}
+function renderCats(){
+  $('#catsRow').innerHTML=['all',...Object.keys(CATS)].map(k=>{
+    const n=k==='all'?TOOLS.length:TOOLS.filter(t=>t.cat===k).length;
+    const lbl=k==='all'?'Semua':CATS[k].label;
+    return `<button class="cchip ${F.cat===k?'on':''}" data-act="cat" data-cat="${k}">${lbl} <span class="mono">${n}</span></button>`}).join('');
+}
+function renderBadges(){
+  const set=(el,n)=>{el.hidden=!n;el.textContent=n};
+  set($('#cartN'),CART.length);set($('#wishN'),WISH.size);
+  const n=$('#navLibN');n.hidden=!LIB.length;n.textContent=LIB.length;
+}
+function renderStatsBar(){
+  if(!STATS)return;
+  $('#nbHost').textContent='host: '+STATS.host;
+  $('#nbStats').innerHTML=`${STATS.tools} tools · ${STATS.reviews} ulasan · ${STATS.purchases} pembelian · ${STATS.users} pengunjung — semuanya di Neon`;
+}
+function renderAll(){renderGrid();renderBadges();renderStatsBar();if(view==='library')renderLibrary()}
+  /* ============ LIBRARY ============ */
+function renderLibrary(){
+  $('#libTabs').innerHTML=`<button class="ltab ${libTab==='owned'?'on':''}" data-act="lib-tab" data-tab="owned">Dimiliki <b class="mono">${LIB.length}</b></button>
+   <button class="ltab ${libTab==='wish'?'on':''}" data-act="lib-tab" data-tab="wish">Wishlist <b class="mono">${WISH.size}</b></button>`;
+  const box=$('#libList');
+  if(libTab==='owned'){
+    if(!LIB.length){box.innerHTML=`<div class="g-empty"><i data-lucide="package"></i><h4>Pustakamu masih kosong</h4><p>Ambil tools gratis atau beli tools indie — catatannya tersimpan permanen di Neon.</p><button class="btn" data-act="view" data-view="store">Jelajahi etalase</button></div>`;icons();return}
+    box.innerHTML=LIB.map(t=>`<div class="lib-row">
+      <div class="lr-cover"><canvas data-id="${t.id}" width="320" height="180"></canvas></div>
+      <div class="lr-info"><h3>${esc(t.name)} <span class="mono v">v${t.ver}</span></h3>
+        <div class="lr-meta mono">${(CATS[t.cat]||{}).label} · order ${t.orderId} · ${fmtRp(t.pricePaid)} · ${fmtDate(t.bought)}</div>
+        <div class="c-rate">${starsHTML(t)}</div></div>
+      <div class="lr-act">${t.hasFile
+        ?`<a class="btn-acc" href="/api/download/${t.id}"><i data-lucide="download"></i>Unduh berkas</a>`
+        :`<button class="btn" data-act="dl-x"><i data-lucide="info"></i>Berkas contoh</button>`}
+        ${t.releaseUrl?`<a class="btn" href="${esc(t.releaseUrl)}" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Halaman rilis</a>`:''}</div>
+    </div>`).join('');
+  }else{
+    const items=TOOLS.filter(t=>WISH.has(t.id));
+    if(!items.length){box.innerHTML=`<div class="g-empty"><i data-lucide="heart"></i><h4>Belum ada tool di wishlist</h4><p>Tandai tool dengan ikon hati — tersimpan permanen di Neon.</p></div>`;icons();return}
+    box.innerHTML=items.map(t=>`<div class="lib-row">
+      <div class="lr-cover"><canvas data-id="${t.id}" width="320" height="180"></canvas></div>
+      <div class="lr-info"><h3>${esc(t.name)}</h3><div class="lr-meta mono">${(CATS[t.cat]||{}).label} · ${t.plat.join(' · ')}</div><div class="c-rate">${starsHTML(t)}</div></div>
+      <div class="lr-act">${t.price===0?`<button class="btn-acc" data-act="get" data-id="${t.id}">Dapatkan</button>`:`<button class="btn" data-act="cart-add" data-id="${t.id}"><i data-lucide="shopping-cart"></i>Keranjang</button>`}</div>
+    </div>`).join('');
+  }
+  $$('#libList canvas[data-id]').forEach(cv=>drawArt(cv,byId(cv.dataset.id)));icons();
+}
+/* ============ KERANJANG & CHECKOUT ============ */
+function openCart(){$('#drawer-wrap').classList.add('open');document.body.classList.add('lock');renderCart()}
+function closeCart(){$('#drawer-wrap').classList.remove('open');if(!$('#modal-root').innerHTML)document.body.classList.remove('lock')}
+function renderCart(){
+  const items=CART.map(byId).filter(Boolean),body=$('#cartBody'),foot=$('#cartFoot');
+  if(!items.length){body.innerHTML=`<div style="text-align:center;padding:60px 10px;color:var(--muted)"><i data-lucide="shopping-cart" style="width:32px;height:32px;color:var(--dim)"></i><p style="margin-top:10px">Keranjangmu kosong.</p></div>`;foot.innerHTML='';icons();return}
+  body.innerHTML=items.map(t=>`<div class="ci">
+    <canvas data-id="${t.id}" width="148" height="88"></canvas>
+    <div class="ci-i"><b>${esc(t.name)}</b><span class="mono">${t.plat.join(' · ')}</span>
+     <b class="p">${t.disc?fmtRp(Math.round(t.price*(100-t.disc)/100/500)*500):fmtRp(t.price)}</b></div>
+    <button class="ci-x" data-act="cart-rm" data-id="${t.id}"><i data-lucide="trash-2"></i></button></div>`).join('');
+  $$('#cartBody canvas[data-id]').forEach(cv=>drawArt(cv,byId(cv.dataset.id)));
+  const total=items.reduce((s,t)=>s+(t.disc?Math.round(t.price*(100-t.disc)/100/500)*500:t.price),0);
+  foot.innerHTML=`<div class="cf-t"><span>Subtotal (${items.length} tool)</span><b>${fmtRp(total)}</b></div>
+   <button class="btn-acc" data-act="checkout">Lanjut ke Pembayaran <i data-lucide="arrow-right"></i></button>
+   <p class="fine mono">Pembayaran disimulasikan — pembelian disimpan permanen di Neon.</p>`;
+  icons();
+}
+  function openCheckout(){
+  if(!CART.length)return;
+  const coItems=CART.map(byId).filter(Boolean);
+  const total=coItems.reduce((s,t)=>s+(t.disc?Math.round(t.price*(100-t.disc)/100/500)*500:t.price),0);
+  modal(`<div class="mo-head"><h3>Checkout</h3><button class="mo-x" data-act="mo-close"><i data-lucide="x"></i></button></div>
+  <div class="mo-body">
+   ${coItems.map(t=>`<div class="co-item"><canvas data-id="${t.id}" width="128" height="76"></canvas><div><b>${esc(t.name)}</b><span class="mono">${t.lic}</span></div><span>${fmtRp(t.disc?Math.round(t.price*(100-t.disc)/100/500)*500:t.price)}</span></div>`).join('')}
+   <div class="co-total"><span>Total</span><b>${fmtRp(total)}</b></div>
+   <div class="pay-m">
+    <label><input type="radio" name="paym" checked><i data-lucide="qr-code"></i>QRIS<span class="mono">TANPA BIAYA</span></label>
+    <label><input type="radio" name="paym"><i data-lucide="banknote"></i>Virtual Account<span class="mono">TANPA BIAYA</span></label>
+    <label><input type="radio" name="paym"><i data-lucide="wallet"></i>E-Wallet<span class="mono">TANPA BIAYA</span></label>
+   </div>
+   <button class="btn-acc" data-act="pay">Bayar ${fmtRp(total)}</button>
+   <p class="fine mono">Simulasi — pembelian dicatat permanen di Neon.</p>
+  </div>`);
+  $$('#modal-root canvas[data-id]').forEach(cv=>drawArt(cv,byId(cv.dataset.id)));icons();
+}
+async function startPay(){
+  const m=$('#modal-root .modal');
+  m.innerHTML=`<div class="mo-head"><h3>Memproses pembayaran</h3></div><div class="spinner"></div><div class="pay-log mono" id="payLog"></div>`;
+  const lines=['menghubungi gateway…','verifikasi tanda tangan…','menunggu konfirmasi…','transaksi disetujui ✓','menulis ke Neon PostgreSQL…'];
+  let i=0;
+  const iv=setInterval(()=>{
+    const log=$('#payLog');if(log)log.insertAdjacentHTML('beforeend',`<div>› ${lines[i]}</div>`);
+    if(++i>=lines.length){clearInterval(iv);setTimeout(finishPay,420)}
+  },480);
+}
+async function finishPay(){
+  try{
+    const r=await jpost('/api/checkout',{ids:CART});
+    CART=[];saveCart();renderBadges();renderCart();closeCart();
+    const m=$('#modal-root .modal');
+    if(m)m.innerHTML=`<div class="succ">
+      <svg class="okmark" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-16"/></svg>
+      <h3>Pembelian tercatat permanen</h3>
+      <span class="oid mono">Order ${r.order} · ${fmtRp(r.total)}</span>
+      <div class="succ-list">${r.items.map(i=>`<div>${esc(i.name)} <b style="float:right">${i.note||'✓ dimiliki'}</b></div>`).join('')}</div>
+      <p class="fine" style="margin-bottom:14px">Catatan ini tersimpan di Neon — restart server kapan pun, tetap ada.</p>
+      <div class="succ-btns">
+        <button class="btn-acc" data-act="open-lib"><i data-lucide="package"></i>Buka Pustakaku</button>
+        <button class="btn" data-act="mo-close">Jelajahi lainnya</button></div>
+    </div>`;
+    icons();toast('Order '+r.order+' tersimpan di Neon','badge-check');
+    loadAll();
+  }catch(e){toast(e,'info')}
+}
+  /* ============ DETAIL ============ */
+async function openDetail(id){
+  let d;try{d=await jget('/api/tools/'+id)}catch(e){return toast(e,'info')}
+  const a=d.tool,owned=d.owned;
+  const dp=a.disc?Math.round(a.price*(100-a.disc)/100/500)*500:a.price;
+  const bb=owned
+   ?`<div class="bb-price"><b class="big" style="color:var(--aqua)">Dimiliki</b><span class="chip oss">PERMANEN DI NEON</span></div>
+     ${a.hasFile?`<a class="btn-acc" href="/api/download/${a.id}"><i data-lucide="download"></i>Unduh berkas nyata</a>`:''}
+     ${a.releaseUrl?`<a class="btn" href="${esc(a.releaseUrl)}" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Halaman rilis</a>`:''}`
+   :a.price===0
+   ?`<div class="bb-price"><b class="big" style="color:var(--acc)">Gratis</b><span class="mono dim" style="font-size:10px">LISENSI ${a.lic}</span></div>
+     <button class="btn-acc" data-act="get" data-id="${a.id}"><i data-lucide="download"></i>Dapatkan Gratis</button>`
+   :`<div class="bb-price">${a.disc?`<s>${fmtRp(a.price)}</s><b class="big">−${a.disc}%</b><b class="big now">${fmtRp(dp)}</b>`:`<b class="big">${fmtRp(a.price)}</b>`}</div>
+     <button class="btn-acc" data-act="cart-add" data-id="${a.id}"><i data-lucide="shopping-cart"></i>Tambah ke Keranjang</button>`;
+  modal(`<div class="mo-head"><h3>${esc(a.name)}</h3><button class="mo-x" data-act="mo-close"><i data-lucide="x"></i></button></div>
+  <div class="mo-body">
+    <div class="d-cover"><canvas id="dCv" width="900" height="380"></canvas></div>
+    <div class="chips"><span class="chip cat">${(CATS[a.cat]||{}).label}</span>${licChip(a)}${a.hasFile?'<span class="chip cat">BERKAS NYATA</span>':''}</div>
+    <div class="d-title">${esc(a.name)}</div>
+    <div class="d-tag">${esc(a.tagline)}</div>
+    <div class="d-meta">${starsHTML(a)}·<span class="mono">${fmtDl(a.downloads)} unduhan</span>·<span class="mono">${fmtDate(a.createdAt)}</span></div>
+    <div class="buybox">${bb}
+      <button class="wishbtn ${WISH.has(a.id)?'on':''}" data-act="wish" data-id="${a.id}"><i data-lucide="heart"></i>${WISH.has(a.id)?'Di Wishlist':'Tambah ke Wishlist'}</button></div>
+    <p class="d-desc">${esc(a.description)}</p>
+    <div class="tagrow">${a.tags.map(t=>`<span class="tagc mono">#${esc(t)}</span>`).join('')}</div>
+    <div class="ds-rows">
+      ${[['Pengembang',esc(a.dev)],['Versi',a.ver],['Ukuran',a.sizeMb+' MB'],['Platform',a.plat.join(' · ')],['Lisensi',a.lic],['ID permanen','#'+a.id]].map(([k,v])=>`<div class="ds-row"><span>${k}</span><b>${v}</b></div>`).join('')}
+    </div>
+    <h4 style="margin:4px 0 12px">Ulasan <span class="mono dim">(${d.reviews.length})</span></h4>
+    <div class="rv-form">
+      <div class="rf-stars" id="rfStars">${[1,2,3,4,5].map(i=>`<button data-act="rf-star" data-v="${i}"><i data-lucide="star"></i></button>`).join('')}</div>
+      <input id="rvName" placeholder="Namamu" maxlength="24">
+      <textarea id="rvTxt" rows="3" placeholder="Bagaimana pengalamanmu?"></textarea>
+      <div class="rf-err mono" id="rvErr" hidden></div>
+      <button class="btn-acc sm" data-act="rv-submit" data-id="${a.id}"><i data-lucide="pen-line"></i>Terbitkan ulasan</button>
+    </div>
+    ${d.reviews.length?d.reviews.map(r=>`<div class="rv">
+      <span class="rv-av" style="background:hsl(${hashSeed(r.name)%70+140} 30% 22%);color:#dfe8dc">${esc(r.name[0].toUpperCase())}</span>
+      <div><div class="rv-h"><b>${esc(r.name)}</b><span>${fmtDate(r.created_at)}</span></div>
+      <div class="stars" style="margin:2px 0">${[0,1,2,3,4].map(i=>`<i data-lucide="star" class="${i<r.rate?'on':''}"></i>`).join('')}</div>
+      <p>${esc(r.text)}</p></div></div>`).join('')
+     :'<p class="dim" style="font-size:13px">Belum ada ulasan — jadilah yang pertama.</p>'}
+  </div>`);
+  drawArt($('#dCv'),a);paintRf();icons();
+}
+let rfRate=5;
+function paintRf(){$$('#rfStars button').forEach((b,i)=>b.classList.toggle('on',i<rfRate))}
+async function submitReview(id){
+  const nm=$('#rvName').value.trim(),tx=$('#rvTxt').value.trim();
+  const err=m=>{const e=$('#rvErr');e.textContent=m;e.hidden=false};
+  if(nm.length<2)return err('Nama minimal 2 karakter.');
+  if(tx.length<10)return err('Ulasan minimal 10 karakter.');
+  try{
+    await jpost('/api/tools/'+id+'/reviews',{name:nm,rate:rfRate,text:tx});
+    toast('Ulasan tersimpan permanen di Neon','star');
+    openDetail(id);loadAll();
+  }catch(e){err(e)}
+}
+  /* ============ UPLOAD ============ */
+let upFile=null,upSalt=7;
+function openUpload(){
+  upFile=null;upSalt=Math.random()*9999|0;
+  modal(`<div class="mo-head"><h3>Unggah Tool — tersimpan permanen di Neon</h3><button class="mo-x" data-act="mo-close"><i data-lucide="x"></i></button></div>
+  <div class="up-grid">
+   <div>
+    <h4>BERKAS APLIKASI (MAKS 8 MB — DISIMPAN DI DATABASE)</h4>
+    <div class="drop" id="drop"><i data-lucide="folder-up"></i><b>Tarik &amp; letakkan .APK / .EXE / .MSI / .ZIP</b><span>atau <u>pilih berkas</u> · berkas ikut permanen di Neon</span>
+     <input type="file" id="upFile" hidden accept=".apk,.exe,.msi,.zip,.aab"></div>
+    <div class="filecard" id="filecard" hidden></div>
+    <div class="fld" style="margin-top:11px"><label>Tautan rilis alternatif (untuk berkas besar)</label>
+     <input id="upLink" placeholder="https://github.com/user/proyek/releases"></div>
+    <h4>DETAIL TOOL</h4>
+    <div class="fld"><label>Nama tool *</label><input id="upName" maxlength="60" placeholder="mis. RetakBatu Vision"></div>
+    <div class="fld"><label>Tagline</label><input id="upTag" maxlength="120" placeholder="satu kalimat penjualan"></div>
+    <div class="fld"><label>Nama pengembang</label><input id="upDev" maxlength="60" placeholder="Nama kamu / tim"></div>
+    <div class="frow">
+     <div class="fld"><label>Kategori *</label><select id="upCat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select></div>
+     <div class="fld"><label>Lisensi *</label><select id="upLic"><option>MIT</option><option>Apache-2.0</option><option>GPL-3.0</option><option>MPL-2.0</option><option>Indie</option></select></div>
+    </div>
+    <div class="fld"><label>Platform *</label><div class="checks">
+     <label><input type="checkbox" class="upPlat" value="windows" checked> Windows</label>
+     <label><input type="checkbox" class="upPlat" value="android"> Android</label></div></div>
+    <div class="fld"><label>Harga</label><div class="checks">
+     <label><input type="radio" name="upPrice" value="free" checked> Gratis</label>
+     <label><input type="radio" name="upPrice" value="paid"> Berbayar</label></div></div>
+    <div class="fld" id="upPriceWrap" hidden><label>Harga (ribu Rp)</label><input id="upPrice" type="number" min="1" value="99"></div>
+    <div class="fld"><label>Tag (koma)</label><input id="upTags" placeholder="ocr, offline, ringan"></div>
+    <div class="fld"><label>Deskripsi * (min. 20 karakter)</label><textarea id="upDesc" rows="4" placeholder="Apa yang dilakukan toolmu, untuk siapa…"></textarea></div>
+    <div class="up-err mono" id="upErr" hidden></div>
+    <button class="btn-acc" data-act="publish"><i data-lucide="rocket"></i>Publikasikan ke Neon</button>
+   </div>
+   <div class="up-r">
+    <h4>PRATINJAU SAMPUL</h4>
+    <canvas id="upcv" width="520" height="242"></canvas>
+    <p class="hint mono">Sampul digenerate prosedural dari nama tool — tiap nama menghasilkan karya unik.</p>
+    <button class="vari" data-act="up-shuffle"><i data-lucide="shuffle"></i>Variasi lain</button>
+    <h4 style="margin-top:18px">CHECKLIST</h4>
+    <div id="upCheck"></div>
+   </div>
+  </div>`);
+  const drop=$('#drop'),file=$('#upFile');
+  drop.addEventListener('click',e=>{if(e.target.closest('u'))file.click()});
+  file.addEventListener('change',()=>setFile(file.files[0]));
+  ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over')}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over')}));
+  drop.addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
+  $$('input[name=upPrice]').forEach(r=>r.addEventListener('change',()=>{
+    $('#upPriceWrap').hidden=!$('input[name=upPrice]:checked').value.startsWith('paid');upSync()}));
+  ['#upName','#upTag','#upDev','#upDesc','#upLink'].forEach(s=>$(s).addEventListener('input',upSync));
+  upSync();
+}
+function setFile(f){
+  const card=$('#filecard'),err=$('#upErr');
+  if(!f){upFile=null;card.hidden=true;return}
+  if(f.size>8*1024*1024){err.textContent='Berkas di atas 8 MB — pakai tautan rilis untuk berkas besar.';err.hidden=false;return}
+  err.hidden=true;upFile=f;
+  card.hidden=false;
+  card.innerHTML=`<i data-lucide="file-check"></i><div><b>${esc(f.name)}</b><div class="mono">${(f.size/1048576).toFixed(2).replace('.',',')} MB · akan disimpan permanen di Neon</div></div>`;
+  icons();upSync();
+}
+  function upSync(){
+  const name=$('#upName').value||'NAMATOOL';
+  drawArt($('#upcv'),{name,cat:$('#upCat').value,ver:'1.0.0'});
+  const items=[
+    [$('#upName').value.trim().length>=3,'Nama minimal 3 karakter'],
+    [$$('.upPlat:checked').length>0,'Pilih platform'],
+    [$('#upDesc').value.trim().length>=20,'Deskripsi min. 20 karakter'],
+    [!!upFile||$('#upLink').value.trim().length>8,'Berkas ≤8 MB atau tautan rilis'],
+  ];
+  $('#upCheck').innerHTML=items.map(([ok,t])=>`<div class="uc ${ok?'ok':''}"><i data-lucide="${ok?'check-circle-2':'circle'}"></i>${t}</div>`).join('');
+  icons();
+}
+async function tryPublish(){
+  const err=m=>{const e=$('#upErr');e.textContent=m;e.hidden=false;e.scrollIntoView({block:'center'})};
+  const fd=new FormData();
+  if(upFile)fd.append('file',upFile);
+  fd.append('name',$('#upName').value);fd.append('tagline',$('#upTag').value);
+  fd.append('dev',$('#upDev').value);fd.append('cat',$('#upCat').value);
+  fd.append('lic',$('#upLic').value);
+  $$('.upPlat:checked').forEach(i=>fd.append('plat',i.value));
+  fd.append('price_mode',$('input[name=upPrice]:checked').value);
+  fd.append('price',$('#upPrice').value);
+  fd.append('tags',$('#upTags').value);fd.append('description',$('#upDesc').value);
+  fd.append('release_url',$('#upLink').value.trim());
+  try{
+    const r=await fetch('/api/tools',{method:'POST',body:fd});
+    const j=await r.json();
+    if(!r.ok)throw j.error;
+    closeModal();
+    await loadAll();
+    F.cat='all';F.q='';$('#q').value='';F.sort='new';$('#sortSel').value='new';renderGrid();
+    toast(j.name+' tersimpan PERMANEN di Neon','rocket');
+    toast('Bukti: data ini tinggal di Neon, bukan di server aplikasi','zap');
+  }catch(e){err(e)}
+}
+/* ============ LAIN-LAIN ============ */
+function openPersistTest(){
+  modal(`<div class="mo-head"><h3>Uji persistensi data</h3><button class="mo-x" data-act="mo-close"><i data-lucide="x"></i></button></div>
+  <div class="mo-body" style="font-size:14px;color:#c3ccbe">
+    <p style="margin-bottom:12px">Data tidak tinggal di server aplikasi — ia tinggal di <b style="color:var(--aqua)">Neon PostgreSQL</b> di cloud. Aplikasi hanyalah jendela ke database itu.</p>
+    <div class="ds-rows">
+      <div class="ds-row"><span>Langkah 1</span><b>Unggah satu tool atau tulis satu ulasan</b></div>
+      <div class="ds-row"><span>Langkah 2</span><b>Restart / redeploy aplikasi</b></div>
+      <div class="ds-row"><span>Langkah 3</span><b>Buka lagi — data tetap ada ✓</b></div>
+      <div class="ds-row"><span>Ekstra</span><b>Jalankan aplikasi ini di host/mesin mana pun dengan DATABASE_URL yang sama — data yang sama muncul, karena ia tinggal di Neon.</b></div>
+    </div>
+    <p class="fine" style="margin-top:14px">Kalau project Neon dihapus dari dashboard, barulah datanya hilang.</p>
+  </div>`);
+}
+  async function toggleWish(id){
+  try{
+    const r=await jpost('/api/wishlist/'+id);
+    r.in?WISH.add(+id):WISH.delete(+id);
+    toast(r.in?'Wishlist tersimpan di Neon':'Dihapus dari wishlist','heart');
+    renderBadges();renderGrid();
+    $$('[data-act="wish"]').forEach(b=>b.classList.toggle('on',WISH.has(+b.dataset.id)));
+    if(view==='library')renderLibrary();
+  }catch(e){toast(e,'info')}
+}
+async function getFree(id){
+  try{
+    await jpost('/api/checkout',{ids:[+id]});
+    toast('Tool ini kini milikmu — permanen di Neon','package');
+    await loadAll();openDetail(id);
+  }catch(e){toast(e,'info')}
+}
+/* ============ EVENT ============ */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const act=t.dataset.act,id=t.dataset.id;
+  const M={
+    view:()=>{view=t.dataset.view;$$('.view').forEach(m=>m.classList.toggle('on',m.id==='view-'+view));
+      $$('nav.main a[data-act="view"]').forEach(a=>a.classList.toggle('on',a.dataset.view===view));
+      if(view==='library')renderLibrary();window.scrollTo({top:0})},
+    open:()=>openDetail(id),
+    wish:()=>toggleWish(id),
+    'cart-add':()=>{const a=byId(id);
+      if(LIB.some(x=>x.id===+id))return toast('Kamu sudah memiliki tool ini','badge-check');
+      if(CART.includes(+id))return toast('Sudah ada di keranjang','shopping-cart');
+      CART.push(+id);saveCart();renderBadges();renderCart();
+      toast(a.name+' masuk keranjang','shopping-cart')},
+    'cart-open':()=>openCart(),'cart-close':()=>closeCart(),
+    'cart-rm':()=>{CART=CART.filter(x=>x!==+id);saveCart();renderBadges();renderCart()},
+    checkout:()=>openCheckout(),pay:()=>startPay(),get:()=>getFree(id),
+    cat:()=>{F.cat=t.dataset.cat;renderGrid()},
+    'up-open':()=>openUpload(),
+    'up-shuffle':()=>{upSalt=Math.random()*9999|0;upSync()},
+    publish:()=>tryPublish(),
+    'mo-close':()=>closeModal(),
+    'rf-star':()=>{rfRate=+t.dataset.v;paintRf()},
+    'rv-submit':()=>submitReview(id),
+    'lib-tab':()=>{libTab=t.dataset.tab;renderLibrary()},
+    'wish-view':()=>{libTab='wish';view='library';$$('.view').forEach(m=>m.classList.toggle('on',m.id==='view-library'));renderLibrary();window.scrollTo({top:0})},
+    'persist-test':()=>openPersistTest(),
+    'open-lib':()=>{closeModal();view='library';$$('.view').forEach(m=>m.classList.toggle('on',m.id==='view-library'));renderLibrary();window.scrollTo({top:0})},
+    'dl-x':()=>toast('Tool contoh tanpa berkas nyata — unggah tool (≤8MB) lalu unduh sendiri berkasnya','info'),
+  };
+  if(M[act]){e.preventDefault();M[act]()}
+});
+   $('#sortSel').addEventListener('change',e=>{F.sort=e.target.value;renderGrid()});
+ $('#q').addEventListener('input',e=>{F.q=e.target.value.trim();renderGrid()});
+document.addEventListener('keydown',e=>{
+  const tag=document.activeElement.tagName;
+  if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(tag)){e.preventDefault();$('#q').focus()}
+  if(e.key==='Escape'){closeModal();closeCart()}
+});
+/* hover: sampul hidup */
+let hRaf=0,hCard=null;
+document.addEventListener('pointerover',e=>{
+  const card=e.target.closest('#grid .app-card');if(card===hCard)return;
+  hCard=card;cancelAnimationFrame(hRaf);
+  if(!card)return;
+  const cv=card.querySelector('canvas'),a=byId(card.dataset.id);
+  if(!cv||!a)return;
+  (function loop(){if(hCard!==card)return;drawArt(cv,a,performance.now()/1000);hRaf=requestAnimationFrame(loop)})();
+});
+/* ambient glyphs di bar status */
+(function(){
+  const cv=$('#glyphs'),bar=$('.neonbar'),ctx=cv.getContext('2d');
+  const G='01<>[]{}#%&*+=/|ΛΔ'.split('');
+  let W,H,items=[];
+  function size(){W=cv.width=bar.clientWidth;H=cv.height=bar.clientHeight;
+    items=Array.from({length:Math.min(60,Math.floor(W*H/9000))},()=>({x:Math.random()*W,y:Math.random()*H,v:.1+Math.random()*.3,c:G[Math.random()*G.length|0],s:9+Math.random()*11,a:.05+Math.random()*.12,acc:Math.random()<.08}))}
+  (function loop(){
+    if(document.visibilityState==='visible'){
+      ctx.clearRect(0,0,W,H);
+      for(const it of items){it.y-=it.v;if(it.y<-20){it.y=H+20;it.x=Math.random()*W}
+       ctx.font=`600 ${it.s}px "JetBrains Mono"`;
+       ctx.fillStyle=it.acc?`rgba(200,240,79,${it.a})`:`rgba(147,160,148,${it.a})`;
+       ctx.fillText(it.c,it.x,it.y)}}
+    requestAnimationFrame(loop)})();
+  window.addEventListener('resize',size);size();
+})();
+/* ============ MULAI ============ */
+loadAll().catch(e=>{
+  $('#nbHost').textContent='gagal terhubung ke database';
+  $('#nbHost').style.color='#ff5f56';
+  toast('Gagal memuat data: '+e,'info');
+});
+document.fonts.ready.then(()=>{$$('#grid canvas[data-id]').forEach(cv=>drawArt(cv,byId(cv.dataset.id)))});
+icons();
+</script>
+</body>
+</html>
