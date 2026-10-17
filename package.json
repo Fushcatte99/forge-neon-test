@@ -1,0 +1,17 @@
+{
+  "name": "forge-neon",
+  "version": "1.0.0",
+  "description": "FORGE — pasar tools AI indie & open source, database permanen di Neon (PostgreSQL)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.12.0",
+    "multer": "^1.4.5-lts.1",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5"
+  }
+}
